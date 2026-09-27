@@ -1,0 +1,9 @@
+Python.pdf
+**/Python.pdf
+watermark*.py
+sign_*.py
+/tmp/clean_shooter_wm.pdf
+.idea/
+__pycache__/
+*.pyc
+.DS_Store
