@@ -26,29 +26,21 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install System Dependencies & Tools
+      - name: Install Pygbag & Pygame
         run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb libsdl2-dev
           python -m pip install --upgrade pip
           pip install pygame pygbag
 
-      - name: Prepare Root Game Directory
+      - name: Build WebAssembly Package
         run: |
-          # Varlıkları ana dizine kopyalayarak pygbag'in erişmesini sağla
-          if [ -d "pythonProject" ]; then
-            cp -r pythonProject/* . || true
+          # Pygbag standart klasör derlemesi
+          python -m pygbag --build --archive game
+          
+          # Çıktı dizinini kontrol et ve web köküne hazırla
+          mkdir -p build/web
+          if [ -d "game/build/web" ]; then
+            cp -r game/build/web/* build/web/
           fi
-
-      - name: Build WebAssembly with Pygbag
-        run: |
-          # Headless sanal ekran altında derlemeyi tetikle
-          xvfb-run -a python -m pygbag --build --archive .
-
-      - name: Verify Web Build Directory
-        run: |
-          # build/web dizininin oluştuğunu doğrula
-          ls -la build/web || (mkdir -p build/web && cp -r * build/web/)
 
       - name: Upload GitHub Pages Artifact
         uses: actions/upload-pages-artifact@v3
