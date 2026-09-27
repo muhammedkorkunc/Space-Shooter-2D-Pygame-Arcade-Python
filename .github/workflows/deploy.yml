@@ -26,20 +26,37 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Dependencies
+      - name: Install Build Tools
         run: |
           python -m pip install --upgrade pip
-          pip install pygbag
+          pip install pygbag pygame
 
-      - name: Compile to WebAssembly
+      - name: Compile Game to Static WebAssembly
         run: |
-          # Pygbag derlemesini doğrudan çalıştır
-          python3 -m pygbag --build game
+          python - << 'PYEOF'
+          import sys
+          from pathlib import Path
+          import pygbag.__main__ as pygbag_main
 
-          # Oluşan çıktıyı GitHub Pages dağıtım klasörüne taşı
+          # Hedef klasörü ayarla
+          target_app = Path("game").resolve()
+          
+          # Parametreleri belirle ve derleme motorunu tetikle
+          sys.argv = ["pygbag", "--build", str(target_app)]
+          try:
+              pygbag_main.main()
+          except SystemExit as e:
+              # Normal sonlanmayı kabul et
+              if e.code not in (0, None):
+                  raise
+          PYEOF
+
+          # Çıktı dizinini doğrula ve build/web klasörüne taşı
           mkdir -p build/web
           if [ -d "game/build/web" ]; then
             cp -r game/build/web/* build/web/
+          elif [ -d "build/web" ]; then
+            echo "build/web directory ready."
           fi
 
       - name: Upload GitHub Pages Artifact
